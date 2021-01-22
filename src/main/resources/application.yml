@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/spring_boot_scaffold?serverTimezone=Asia/Shanghai
+    username: root
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+server:
+  error:
+    include-stacktrace: never
