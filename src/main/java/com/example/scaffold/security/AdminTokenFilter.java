@@ -1,7 +1,7 @@
 package com.example.scaffold.security;
 
-import com.example.scaffold.models.AppUser;
-import com.example.scaffold.repos.AppUserRepo;
+import com.example.scaffold.repos.AdminUserRepo;
+import com.example.scaffold.models.AdminUser;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -17,7 +17,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +24,12 @@ import java.util.List;
 import static com.example.scaffold.security.Constants.*;
 
 @Component
-public class AppJWTTokenFilter extends OncePerRequestFilter {
+public class AdminTokenFilter extends OncePerRequestFilter {
 
-    private final AppUserRepo appUserRepo;
+    private final AdminUserRepo adminUserRepo;
 
-    public AppJWTTokenFilter(AppUserRepo appUserRepo) {
-        this.appUserRepo = appUserRepo;
+    public AdminTokenFilter(AdminUserRepo adminUserRepo) {
+        this.adminUserRepo = adminUserRepo;
     }
 
     @Override
@@ -48,14 +47,14 @@ public class AppJWTTokenFilter extends OncePerRequestFilter {
             SignedJWT signedJWT = SignedJWT.parse(token);
 
             final List<String> audiences = signedJWT.getJWTClaimsSet().getAudience();
-            if (!audiences.contains(APP_AUDIENCE)) {
+            if (!audiences.contains(ADMIN_AUDIENCE)) {
                 chain.doFilter(request, response);
                 return;
             }
 
             final String subject = signedJWT.getJWTClaimsSet().getSubject();
-            AppUser appUser = appUserRepo.findById(Long.parseLong(subject));
-            byte[] secret = appUser.getJwtSecret().getBytes(StandardCharsets.UTF_8);
+            AdminUser adminUser = adminUserRepo.findById(Long.parseLong(subject));
+            byte[] secret = adminUser.getJwtSecretBytes();
             JWSVerifier verifier = new MACVerifier(secret);
 
             if (!signedJWT.verify(verifier)) {
@@ -69,7 +68,7 @@ public class AppJWTTokenFilter extends OncePerRequestFilter {
 //            }
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    appUser.getUsername(), null, new ArrayList<>()
+                    adminUser.getUsername(), null, new ArrayList<>()
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);

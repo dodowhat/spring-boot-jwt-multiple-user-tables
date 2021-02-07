@@ -1,5 +1,6 @@
-package com.example.scaffold.controllers.app;
+package com.example.scaffold.controllers;
 
+import com.example.scaffold.controllers.AppBaseController;
 import com.example.scaffold.models.AppUser;
 import com.example.scaffold.repos.AppUserRepo;
 import com.example.scaffold.security.AppUserDetails;
@@ -17,7 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Date;
@@ -25,20 +25,20 @@ import java.util.Date;
 import static com.example.scaffold.security.Constants.*;
 
 @RestController
-public class AppAuthenticationController extends AppBaseController {
+public class AppAuthController extends AppBaseController {
 
     private final AuthenticationManager authenticationManager;
     private final AppUserRepo appUserRepo;
 
-    public AppAuthenticationController(AuthenticationManager authenticationManager,
-                                       AppUserRepo appUserRepo) {
+    public AppAuthController(AuthenticationManager authenticationManager,
+                             AppUserRepo appUserRepo) {
         this.authenticationManager = authenticationManager;
         this.appUserRepo = appUserRepo;
     }
 
-    @PostMapping("/authentication")
+    @PostMapping("/auth")
     @JsonView(AppUser.BriefView.class)
-    public ResponseEntity<AppUser> create(@RequestBody AppUser request) {
+    public ResponseEntity<AppUser> login(@RequestBody AppUser request) {
         try {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -51,7 +51,7 @@ public class AppAuthenticationController extends AppBaseController {
 
             AppUser appUser = appUserRepo.findByUsername(appUserDetails.getUsername());
 
-            byte[] secret = appUser.getJwtSecret().getBytes(StandardCharsets.UTF_8);
+            byte[] secret = appUser.getJwtSecretBytes();
 
             JWSSigner signer = new MACSigner(secret);
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
@@ -78,16 +78,16 @@ public class AppAuthenticationController extends AppBaseController {
         }
     }
 
-    @GetMapping("/authentication")
+    @GetMapping("/auth")
     @JsonView(AppUser.BriefView.class)
-    public ResponseEntity<AppUser> read(UsernamePasswordAuthenticationToken auth) {
+    public ResponseEntity<AppUser> profile(UsernamePasswordAuthenticationToken auth) {
         AppUser appUser = appUserRepo.findByUsername((String) auth.getPrincipal());
         return ResponseEntity.ok()
                 .body(appUser);
     }
 
-    @DeleteMapping("/authentication")
-    public void delete(UsernamePasswordAuthenticationToken auth) {
+    @DeleteMapping("/auth")
+    public void logout(UsernamePasswordAuthenticationToken auth) {
         AppUser appUser = appUserRepo.findByUsername((String) auth.getPrincipal());
 
         SecureRandom secureRandom = new SecureRandom();

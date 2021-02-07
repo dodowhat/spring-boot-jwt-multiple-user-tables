@@ -7,7 +7,11 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
-import java.time.LocalDateTime;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Date;
+
+import static com.example.scaffold.security.Constants.SECRET_LENGTH;
 
 @Entity
 @Table(name = "admin_users")
@@ -31,10 +35,10 @@ public class AdminUser {
     private String jwtSecret;
 
     @CreationTimestamp
-    private LocalDateTime createTime;
+    private Date createdAt;
 
     @UpdateTimestamp
-    private LocalDateTime updateTime;
+    private Date updatedAt;
 
     @JsonView(BriefView.class)
     public long getId() {
@@ -58,11 +62,23 @@ public class AdminUser {
         this.password = password;
     }
 
+    @JsonView(BriefView.class)
     public String getJwtSecret() {
         return jwtSecret;
     }
 
     public void setJwtSecret(String jwtSecret) {
         this.jwtSecret = jwtSecret;
+    }
+
+    public byte[] getJwtSecretBytes() {
+        return Base64.getUrlDecoder().decode(this.jwtSecret);
+    }
+
+    public void resetJwtSecret() {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] bytes = new byte[SECRET_LENGTH];
+        secureRandom.nextBytes(bytes);
+        this.jwtSecret = Base64.getUrlEncoder().encodeToString(bytes);
     }
 }

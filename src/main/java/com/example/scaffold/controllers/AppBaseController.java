@@ -1,7 +1,7 @@
-package com.example.scaffold.controllers.app;
+package com.example.scaffold.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping("/app")
+@RequestMapping("/")
 public class AppBaseController {
 }

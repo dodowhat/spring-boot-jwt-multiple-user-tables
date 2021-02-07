@@ -16,28 +16,25 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.Date;
 
 import static com.example.scaffold.security.Constants.*;
 
 @RestController
-public class AdminAuthenticationController extends AdminBaseController {
+public class AdminAuthController extends AdminBaseController {
 
     private final AuthenticationManager authenticationManager;
     private final AdminUserRepo adminUserRepo;
 
-    public AdminAuthenticationController(AuthenticationManager authenticationManager,
-                                         AdminUserRepo adminUserRepo) {
+    public AdminAuthController(AuthenticationManager authenticationManager,
+                               AdminUserRepo adminUserRepo) {
         this.authenticationManager = authenticationManager;
         this.adminUserRepo = adminUserRepo;
     }
 
-    @PostMapping("/authentication")
+    @PostMapping("/auth")
     @JsonView(AdminUser.BriefView.class)
-    public ResponseEntity<AdminUser> create(@RequestBody AdminUser request) {
+    public ResponseEntity<AdminUser> login(@RequestBody AdminUser request) {
         try {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -50,7 +47,7 @@ public class AdminAuthenticationController extends AdminBaseController {
 
             AdminUser adminUser = adminUserRepo.findByUsername(adminUserDetails.getUsername());
 
-            byte[] secret = adminUser.getJwtSecret().getBytes(StandardCharsets.UTF_8);
+            byte[] secret = adminUser.getJwtSecretBytes();
 
             JWSSigner signer = new MACSigner(secret);
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
@@ -69,7 +66,7 @@ public class AdminAuthenticationController extends AdminBaseController {
                     .body(adminUser);
 
         } catch (BadCredentialsException e) {
-            var exception = new BadCredentialsException("用户名或密码错误");
+            var exception = new BadCredentialsException("Invalid username or password");
             exception.initCause(e);
             throw exception;
         } catch (KeyLengthException e) {
@@ -80,23 +77,18 @@ public class AdminAuthenticationController extends AdminBaseController {
 
     }
 
-    @GetMapping("/authentication")
+    @GetMapping("/auth")
     @JsonView(AdminUser.BriefView.class)
-    public ResponseEntity<AdminUser> read(UsernamePasswordAuthenticationToken auth) {
+    public ResponseEntity<AdminUser> profile(UsernamePasswordAuthenticationToken auth) {
         AdminUser adminUser = adminUserRepo.findByUsername((String) auth.getPrincipal());
         return ResponseEntity.ok()
                 .body(adminUser);
     }
 
-    @DeleteMapping("/authentication")
-    public void delete(UsernamePasswordAuthenticationToken auth) {
+    @DeleteMapping("/auth")
+    public void logout(UsernamePasswordAuthenticationToken auth) {
         AdminUser adminUser = adminUserRepo.findByUsername((String) auth.getPrincipal());
-
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] bytes = new byte[32];
-        secureRandom.nextBytes(bytes);
-        adminUser.setJwtSecret(Base64.getUrlEncoder().encodeToString(bytes));
-
+        adminUser.resetJwtSecret();
         adminUserRepo.save(adminUser);
     }
 

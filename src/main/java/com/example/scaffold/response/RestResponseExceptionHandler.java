@@ -7,15 +7,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @RestControllerAdvice
 public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponseBody> handle(Exception e, HttpServletRequest request) {
         ExceptionResponseBody response = new ExceptionResponseBody();
-        response.setTimestamp(LocalDateTime.now());
-        response.setMessage("内部错误，请联系后端管理员查看");
+        response.setTimestamp(new Date());
+        response.setMessage(e.getMessage());
         response.setPath(request.getRequestURI());
         return new ResponseEntity<ExceptionResponseBody>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }

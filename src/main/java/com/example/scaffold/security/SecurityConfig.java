@@ -27,17 +27,17 @@ public class SecurityConfig {
 		private final AppUserDetailsService appUserDetailsService;
 		private final PasswordEncoder passwordEncoder;
 		private final UnauthorizedEntryPoint unauthorizedEntryPoint;
-		private final AdminJWTTokenFilter adminJWTTokenFilter;
+		private final AdminTokenFilter adminTokenFilter;
 
 		public AdminSecurityConfig(AdminUserDetailsService adminUserDetailsService,
 								   AppUserDetailsService appUserDetailsService,
 								   UnauthorizedEntryPoint unauthorizedEntryPoint,
-								   AdminJWTTokenFilter adminJWTTokenFilter,
+								   AdminTokenFilter adminTokenFilter,
 								   PasswordEncoder passwordEncoder) {
 			this.adminUserDetailsService = adminUserDetailsService;
 			this.appUserDetailsService = appUserDetailsService;
 			this.passwordEncoder = passwordEncoder;
-			this.adminJWTTokenFilter = adminJWTTokenFilter;
+			this.adminTokenFilter = adminTokenFilter;
 			this.unauthorizedEntryPoint = unauthorizedEntryPoint;
 		}
 
@@ -78,23 +78,23 @@ public class SecurityConfig {
 
 			http.antMatcher("/admin/**")
 					.authorizeRequests()
-					.antMatchers(HttpMethod.POST, "/admin/authentication").permitAll()
-					.antMatchers(HttpMethod.POST, "/admin/users/init").permitAll()
+					.antMatchers(HttpMethod.POST, "/admin/auth").permitAll()
+					.antMatchers(HttpMethod.GET, "/admin/admin_users/init").permitAll()
 					.anyRequest().authenticated();
 
-			http.addFilterBefore(adminJWTTokenFilter, UsernamePasswordAuthenticationFilter.class);
+			http.addFilterBefore(adminTokenFilter, UsernamePasswordAuthenticationFilter.class);
 		}
 	}
 
 	@Configuration
 	public static class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 		private final UnauthorizedEntryPoint unauthorizedEntryPoint;
-		private final AppJWTTokenFilter appJWTTokenFilter;
+		private final AppTokenFilter appTokenFilter;
 
 		public AppSecurityConfig(UnauthorizedEntryPoint unauthorizedEntryPoint,
-								 AppJWTTokenFilter appJWTTokenFilter) {
+								 AppTokenFilter appTokenFilter) {
 			this.unauthorizedEntryPoint = unauthorizedEntryPoint;
-			this.appJWTTokenFilter = appJWTTokenFilter;
+			this.appTokenFilter = appTokenFilter;
 		}
 
 		@Override
@@ -116,11 +116,10 @@ public class SecurityConfig {
 					.and();
 
 			http.authorizeRequests()
-					.antMatchers(HttpMethod.POST, "/app/authentication").permitAll()
-					.antMatchers(HttpMethod.POST, "/app/users").permitAll()
+					.antMatchers(HttpMethod.POST, "/auth").permitAll()
 					.anyRequest().authenticated();
 
-			http.addFilterBefore(appJWTTokenFilter, UsernamePasswordAuthenticationFilter.class);
+			http.addFilterBefore(appTokenFilter, UsernamePasswordAuthenticationFilter.class);
 		}
 	}
 

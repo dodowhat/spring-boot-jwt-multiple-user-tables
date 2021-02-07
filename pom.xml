@@ -8,11 +8,11 @@
 		<version>2.4.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.ericwen</groupId>
-	<artifactId>estore</artifactId>
+	<groupId>com.example</groupId>
+	<artifactId>scaffold</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>estore</name>
-	<description>estore</description>
+	<name>scaffold</name>
+	<description>scaffold</description>
 
 	<properties>
 		<java.version>11</java.version>
