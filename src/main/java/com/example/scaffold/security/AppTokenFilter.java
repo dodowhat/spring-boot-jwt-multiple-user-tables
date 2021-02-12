@@ -17,9 +17,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static com.example.scaffold.security.Constants.*;
@@ -69,7 +68,7 @@ public class AppTokenFilter extends OncePerRequestFilter {
 //            }
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    appUser.getUsername(), null, new ArrayList<>()
+                    appUser.getUsername(), null, new HashSet<>()
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);

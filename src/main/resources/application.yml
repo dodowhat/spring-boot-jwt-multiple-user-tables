@@ -5,10 +5,11 @@ spring:
     password: root
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
   jackson:
     property-naming-strategy: SNAKE_CASE
 
 server:
   error:
     include-stacktrace: never
+  port: 8888

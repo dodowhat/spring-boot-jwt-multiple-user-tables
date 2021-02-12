@@ -6,24 +6,12 @@ import org.springframework.security.core.userdetails.User;
 import java.util.Collection;
 
 public class AdminUserDetails extends User {
-    public Long id;
-    public String jwtSecret;
 
-    public AdminUserDetails(Long id,
-                            String jwtSecret,
-                            String username,
-                            String password,
-                            Collection<? extends GrantedAuthority> authorities) {
+    public AdminUserDetails(
+            String username,
+            String password,
+            Collection<? extends GrantedAuthority> authorities
+    ) {
         super(username, password, authorities);
-        this.id = id;
-        this.jwtSecret = jwtSecret;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getJwtSecret() {
-        return jwtSecret;
     }
 }

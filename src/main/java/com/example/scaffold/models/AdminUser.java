@@ -1,6 +1,7 @@
 package com.example.scaffold.models;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import com.example.scaffold.serializers.AdminUserSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -10,15 +11,14 @@ import javax.validation.constraints.NotBlank;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Set;
 
 import static com.example.scaffold.security.Constants.SECRET_LENGTH;
 
 @Entity
 @Table(name = "admin_users")
+@JsonSerialize(using = AdminUserSerializer.class)
 public class AdminUser {
-
-    public interface BriefView {}
-    public interface DetailedView extends BriefView {}
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,12 +40,18 @@ public class AdminUser {
     @UpdateTimestamp
     private Date updatedAt;
 
-    @JsonView(BriefView.class)
+    @ManyToMany
+    @JoinTable(
+            name = "admin_role_admin_user",
+            joinColumns = @JoinColumn(name = "admin_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "admin_role_id")
+    )
+    private Set<AdminRole> roles;
+
     public long getId() {
         return id;
     }
 
-    @JsonView(BriefView.class)
     public String getUsername() {
         return username;
     }
@@ -62,13 +68,8 @@ public class AdminUser {
         this.password = password;
     }
 
-    @JsonView(BriefView.class)
     public String getJwtSecret() {
         return jwtSecret;
-    }
-
-    public void setJwtSecret(String jwtSecret) {
-        this.jwtSecret = jwtSecret;
     }
 
     public byte[] getJwtSecretBytes() {
@@ -80,5 +81,30 @@ public class AdminUser {
         byte[] bytes = new byte[SECRET_LENGTH];
         secureRandom.nextBytes(bytes);
         this.jwtSecret = Base64.getUrlEncoder().encodeToString(bytes);
+    }
+
+    public Set<AdminRole> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<AdminRole> roles) {
+        this.roles = roles;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public Boolean isAdmin() {
+        for (AdminRole role : this.getRoles()) {
+            if (role.getName() == "admin") {
+                return true;
+            }
+        }
+        return false;
     }
 }

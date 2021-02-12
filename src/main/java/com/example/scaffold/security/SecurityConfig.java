@@ -79,7 +79,6 @@ public class SecurityConfig {
 			http.antMatcher("/admin/**")
 					.authorizeRequests()
 					.antMatchers(HttpMethod.POST, "/admin/auth").permitAll()
-					.antMatchers(HttpMethod.GET, "/admin/admin_users/init").permitAll()
 					.anyRequest().authenticated();
 
 			http.addFilterBefore(adminTokenFilter, UsernamePasswordAuthenticationFilter.class);

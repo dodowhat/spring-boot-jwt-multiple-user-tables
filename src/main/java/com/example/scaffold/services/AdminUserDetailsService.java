@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 @Service
 public class AdminUserDetailsService implements UserDetailsService {
@@ -24,11 +24,10 @@ public class AdminUserDetailsService implements UserDetailsService {
         if (adminUser == null) {
             throw new UsernameNotFoundException(username);
         }
-        return new AdminUserDetails(adminUser.getId(),
-                adminUser.getJwtSecret(),
+        return new AdminUserDetails(
                 adminUser.getUsername(),
                 adminUser.getPassword(),
-                new ArrayList<>()
+                new HashSet<>()
         );
     }
 }

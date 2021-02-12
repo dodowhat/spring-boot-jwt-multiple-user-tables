@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static com.example.scaffold.security.Constants.*;
@@ -68,7 +68,7 @@ public class AdminTokenFilter extends OncePerRequestFilter {
 //            }
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    adminUser.getUsername(), null, new ArrayList<>()
+                    adminUser.getUsername(), null, new HashSet<>()
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);

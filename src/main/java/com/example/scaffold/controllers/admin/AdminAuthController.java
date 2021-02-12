@@ -1,9 +1,10 @@
 package com.example.scaffold.controllers.admin;
 
+import com.example.scaffold.exceptions.EntityUnprocessableException;
 import com.example.scaffold.models.AdminUser;
 import com.example.scaffold.repos.AdminUserRepo;
+import com.example.scaffold.request.AdminAuthUpdatePasswordRequestBody;
 import com.example.scaffold.security.AdminUserDetails;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -25,15 +27,19 @@ public class AdminAuthController extends AdminBaseController {
 
     private final AuthenticationManager authenticationManager;
     private final AdminUserRepo adminUserRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    public AdminAuthController(AuthenticationManager authenticationManager,
-                               AdminUserRepo adminUserRepo) {
+    public AdminAuthController(
+            AuthenticationManager authenticationManager,
+            AdminUserRepo adminUserRepo,
+            PasswordEncoder passwordEncoder
+    ) {
         this.authenticationManager = authenticationManager;
         this.adminUserRepo = adminUserRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/auth")
-    @JsonView(AdminUser.BriefView.class)
     public ResponseEntity<AdminUser> login(@RequestBody AdminUser request) {
         try {
             Authentication auth = authenticationManager.authenticate(
@@ -78,17 +84,40 @@ public class AdminAuthController extends AdminBaseController {
     }
 
     @GetMapping("/auth")
-    @JsonView(AdminUser.BriefView.class)
-    public ResponseEntity<AdminUser> profile(UsernamePasswordAuthenticationToken auth) {
-        AdminUser adminUser = adminUserRepo.findByUsername((String) auth.getPrincipal());
+    public ResponseEntity<AdminUser> profile(Authentication authentication) {
+        AdminUser adminUser = adminUserRepo.findByUsername(authentication.getName());
         return ResponseEntity.ok()
                 .body(adminUser);
     }
 
     @DeleteMapping("/auth")
-    public void logout(UsernamePasswordAuthenticationToken auth) {
-        AdminUser adminUser = adminUserRepo.findByUsername((String) auth.getPrincipal());
+    public void logout(Authentication authentication) {
+        AdminUser adminUser = adminUserRepo.findByUsername(authentication.getName());
         adminUser.resetJwtSecret();
+        adminUserRepo.save(adminUser);
+    }
+
+    @PatchMapping("/auth/update_password")
+    public void updatePassword(
+            Authentication authentication,
+            @RequestBody AdminAuthUpdatePasswordRequestBody requestBody
+    ) throws EntityUnprocessableException {
+        AdminUser adminUser = adminUserRepo.findByUsername(authentication.getName());
+
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            adminUser.getUsername(),
+                            requestBody.getPassword()
+                    )
+            );
+        } catch (BadCredentialsException e) {
+            var exception = new EntityUnprocessableException("Authentication failed");
+            exception.initCause(e);
+            throw exception;
+        }
+
+        adminUser.setPassword(passwordEncoder.encode(requestBody.getNewPassword()));
         adminUserRepo.save(adminUser);
     }
 
