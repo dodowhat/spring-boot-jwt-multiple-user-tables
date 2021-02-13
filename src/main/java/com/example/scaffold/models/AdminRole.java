@@ -1,14 +1,13 @@
 package com.example.scaffold.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.Set;
 
@@ -22,6 +21,8 @@ public class AdminRole {
 
     @NotBlank
     @Column(unique = true)
+    @Size(min = 3, max = 64)
+    @Pattern(regexp = "^[A-Za-z0-9]{3,}$", message = "must be alpha or(and) numbers")
     private String name;
 
     @CreationTimestamp

@@ -1,6 +1,6 @@
 package com.example.scaffold.controllers.admin;
 
-import com.example.scaffold.exceptions.EntityUnprocessableException;
+import com.example.scaffold.exceptions.ActionNotAllowedException;
 import com.example.scaffold.models.AdminUser;
 import com.example.scaffold.repos.AdminUserRepo;
 import com.example.scaffold.request.AdminAuthUpdatePasswordRequestBody;
@@ -101,7 +101,7 @@ public class AdminAuthController extends AdminBaseController {
     public void updatePassword(
             Authentication authentication,
             @RequestBody AdminAuthUpdatePasswordRequestBody requestBody
-    ) throws EntityUnprocessableException {
+    ) throws ActionNotAllowedException {
         AdminUser adminUser = adminUserRepo.findByUsername(authentication.getName());
 
         try {
@@ -112,7 +112,7 @@ public class AdminAuthController extends AdminBaseController {
                     )
             );
         } catch (BadCredentialsException e) {
-            EntityUnprocessableException exception = new EntityUnprocessableException("Authentication failed");
+            ActionNotAllowedException exception = new ActionNotAllowedException("Authentication failed");
             exception.initCause(e);
             throw exception;
         }

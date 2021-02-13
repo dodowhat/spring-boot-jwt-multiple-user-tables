@@ -7,6 +7,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -26,9 +28,12 @@ public class AdminUser {
 
     @NotBlank
     @Column(unique = true)
+    @Size(min = 3, max = 64)
+    @Pattern(regexp = "^[A-Za-z0-9]{3,}$", message = "must be alpha or(and) numbers")
     private String username;
 
     @NotBlank
+    @Size(min = 8, max = 128)
     private String password;
 
     @NotBlank

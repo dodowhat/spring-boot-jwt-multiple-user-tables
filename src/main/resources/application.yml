@@ -5,7 +5,7 @@ spring:
     password: root
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
   jackson:
     property-naming-strategy: SNAKE_CASE
 

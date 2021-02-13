@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.scaffold.models.AdminUser;
 
 import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HashSet;
@@ -42,7 +43,7 @@ public class AdminUserController extends AdminBaseController {
 	
 	@PostMapping("/admin_users")
 	@PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@create')")
-	public void create(@RequestBody AdminUser adminUser) {
+	public void create(@Valid @RequestBody AdminUser adminUser) {
 		adminUser.setPassword(passwordEncoder.encode(adminUser.getPassword()));
 		adminUser.resetJwtSecret();
 		adminUserRepo.save(adminUser);

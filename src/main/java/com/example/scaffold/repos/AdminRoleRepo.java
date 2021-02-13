@@ -13,6 +13,6 @@ public interface AdminRoleRepo extends JpaRepository<AdminRole, Long> {
     AdminRole findById(long id);
     AdminRole findByName(String name);
     Set<AdminRole> findByIdIn(Set<Long> ids);
-//    @Query(value = "select count(*) from admin_role_admin_user where admin_role_id = ?1", nativeQuery = true)
-//    long userCount(long id);
+    // @Query(value = "select count(*) from admin_role_admin_user where admin_role_id = ?1", nativeQuery = true)
+    // long userCount(long id);
 }
