@@ -99,9 +99,9 @@ public class AdminUser {
         return updatedAt;
     }
 
-    public Boolean isAdmin() {
-        for (AdminRole role : this.getRoles()) {
-            if (role.getName() == "admin") {
+    public boolean isAdmin() {
+        for (AdminRole role : getRoles()) {
+            if (role.isAdmin()) {
                 return true;
             }
         }

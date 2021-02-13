@@ -72,7 +72,7 @@ public class AdminAuthController extends AdminBaseController {
                     .body(adminUser);
 
         } catch (BadCredentialsException e) {
-            var exception = new BadCredentialsException("Invalid username or password");
+            BadCredentialsException exception = new BadCredentialsException("Invalid username or password");
             exception.initCause(e);
             throw exception;
         } catch (KeyLengthException e) {
@@ -112,7 +112,7 @@ public class AdminAuthController extends AdminBaseController {
                     )
             );
         } catch (BadCredentialsException e) {
-            var exception = new EntityUnprocessableException("Authentication failed");
+            EntityUnprocessableException exception = new EntityUnprocessableException("Authentication failed");
             exception.initCause(e);
             throw exception;
         }

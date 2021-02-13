@@ -1,12 +1,7 @@
 package com.example.scaffold.models;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -20,8 +15,7 @@ public class AdminActionGroup {
     @Column(unique = true)
     private String name;
 
-    @OneToMany()
-    @JoinColumn(name = "admin_action_group_id")
+    @OneToMany(mappedBy = "group")
     private Set<AdminAction> actions;
 
     public AdminActionGroup() {}
@@ -32,6 +26,10 @@ public class AdminActionGroup {
 
     public long getId() {
         return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getName() {

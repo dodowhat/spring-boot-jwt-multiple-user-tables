@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +41,7 @@ public class AdminUserController extends AdminBaseController {
 	}
 	
 	@PostMapping("/admin_users")
+	@PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@create')")
 	public void create(@RequestBody AdminUser adminUser) {
 		adminUser.setPassword(passwordEncoder.encode(adminUser.getPassword()));
 		adminUser.resetJwtSecret();
@@ -47,13 +49,15 @@ public class AdminUserController extends AdminBaseController {
 	}
 
 	@GetMapping("/admin_users")
-	public ResponseEntity<Page<AdminUser>> index() {
-		Pageable pageable = PageRequest.of(0, 10);
-		Page<AdminUser> page = adminUserRepo.findAll(pageable);
-		return ResponseEntity.ok().body(page);
+	@PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@index')")
+	public ResponseEntity<Page<AdminUser>> index(@RequestParam(required = false, defaultValue = "1") int page) {
+		Pageable pageable = PageRequest.of(page - 1, 10);
+		Page<AdminUser> p = adminUserRepo.findAll(pageable);
+		return ResponseEntity.ok().body(p);
 	}
 
 	@GetMapping("/admin_users/{id}")
+	@PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@show')")
 	public ResponseEntity<AdminUser> show(@PathVariable long id) {
 	    if (!adminUserRepo.existsById(id)) {
 	    	throw new EntityNotFoundException("Entity not found");
@@ -63,6 +67,7 @@ public class AdminUserController extends AdminBaseController {
 	}
 
 	@DeleteMapping("/admin_users/{id}")
+	@PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@destroy')")
 	public void destroy(Authentication authentication, @PathVariable long id) throws ActionNotAllowedException {
 		if (!adminUserRepo.existsById(id)) {
 			throw new EntityNotFoundException("Entity not found");
@@ -78,6 +83,7 @@ public class AdminUserController extends AdminBaseController {
 	}
 
 	@PatchMapping("/admin_users/{id}/reset_password")
+	@PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@resetPassword')")
 	public ResponseEntity<AdminUserResetPasswordResponseBody> resetPassword(
 			Authentication authentication,
 			@PathVariable long id
@@ -101,6 +107,7 @@ public class AdminUserController extends AdminBaseController {
 	}
 
 	@PatchMapping("/admin_users/{id}/assign_roles")
+	@PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@assignRoles')")
 	public void assignRoles(
 			@PathVariable long id,
 			@RequestBody AdminUserAssignRolesRequestBody requestBody

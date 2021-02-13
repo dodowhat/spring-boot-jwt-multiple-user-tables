@@ -7,6 +7,7 @@ import com.example.scaffold.repos.AdminActionRepo;
 import com.example.scaffold.repos.AdminRoleRepo;
 import com.example.scaffold.request.AdminRoleAssignActionsRequestBody;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
@@ -28,17 +29,20 @@ public class AdminRoleController extends AdminBaseController {
     }
 
     @GetMapping("/admin_roles")
+    @PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@index')")
     public ResponseEntity<List<AdminRole>> index() {
         List<AdminRole> roles = adminRoleRepo.findAll();
         return ResponseEntity.ok(roles);
     }
 
     @PostMapping("/admin_roles")
+    @PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@create')")
     public void create(@RequestBody AdminRole adminRole) {
         adminRoleRepo.save(adminRole);
     }
 
     @DeleteMapping("/admin_roles/{id}")
+    @PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@destroy')")
     public void destroy(@PathVariable long id) throws ActionNotAllowedException {
         if (!adminRoleRepo.existsById(id)) {
             throw new EntityNotFoundException("Entity not found");
@@ -46,7 +50,7 @@ public class AdminRoleController extends AdminBaseController {
 
         AdminRole adminRole = adminRoleRepo.findById(id);
 
-        if (adminRole.getName() == "admin") {
+        if (adminRole.isAdmin()) {
             throw new ActionNotAllowedException("Not allowed to delete role 'admin'");
         }
 
@@ -62,12 +66,13 @@ public class AdminRoleController extends AdminBaseController {
     }
 
     @PatchMapping("/admin_roles/{id}/assign_actions")
+    @PreAuthorize("hasPermission('admin', #this.this.class.getSimpleName() + '@assignActions')")
     public void assignActions(
             @PathVariable long id,
             @RequestBody AdminRoleAssignActionsRequestBody requestBody
     ) throws ActionNotAllowedException {
         AdminRole adminRole = adminRoleRepo.findById(id);
-        if (adminRole.getName() == "admin") {
+        if (adminRole.isAdmin()) {
             throw new ActionNotAllowedException("Role 'admin' no need to assign actions");
         }
 

@@ -1,5 +1,6 @@
 package com.example.scaffold.seeders;
 
+import com.example.scaffold.models.AdminAction;
 import com.example.scaffold.models.AdminActionGroup;
 import com.example.scaffold.models.AdminRole;
 import com.example.scaffold.models.AdminUser;
@@ -40,31 +41,73 @@ public class AdminSeeder {
 
 //    @EventListener
     public void run(ContextRefreshedEvent event) {
-        AdminRole adminRole = new AdminRole("admin");
-        adminRoleRepo.save(adminRole);
+        AdminRole role = new AdminRole("admin");
+        adminRoleRepo.save(role);
 
         Set<AdminRole> roles = new HashSet<>();
-        roles.add(adminRole);
+        roles.add(role);
 
-        AdminUser adminUser = new AdminUser();
-        adminUser.setUsername("admin");
-        adminUser.setPassword(passwordEncoder.encode("admin"));
-        adminUser.resetJwtSecret();
-        adminUser.setRoles(roles);
-        adminUserRepo.save(adminUser);
+        AdminUser user = new AdminUser();
+        user.setUsername("admin");
+        user.setPassword(passwordEncoder.encode("admin"));
+        user.resetJwtSecret();
+        user.setRoles(roles);
+        adminUserRepo.save(user);
 
         roles.clear();
 
-        adminRole = new AdminRole("editor");
-        adminRoleRepo.save(adminRole);
+        role = new AdminRole("editor");
+        adminRoleRepo.save(role);
 
-        roles.add(adminRole);
+        roles.add(role);
 
-        adminUser = new AdminUser();
-        adminUser.setUsername("editor");
-        adminUser.setPassword(passwordEncoder.encode("editor"));
-        adminUser.resetJwtSecret();
-        adminUser.setRoles(roles);
-        adminUserRepo.save(adminUser);
+        user = new AdminUser();
+        user.setUsername("editor");
+        user.setPassword(passwordEncoder.encode("editor"));
+        user.resetJwtSecret();
+        user.setRoles(roles);
+        adminUserRepo.save(user);
+
+        AdminActionGroup group = new AdminActionGroup("AdminUsers");
+        adminActionGroupRepo.save(group);
+        AdminAction action = new AdminAction("AdminUserController@index", "List AdminUser");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+        action = new AdminAction("AdminUserController@create", "Create AdminUser");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+        action = new AdminAction("AdminUserController@show", "Show AdminUser");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+        action = new AdminAction("AdminUserController@destroy", "Delete AdminUser");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+        action = new AdminAction("AdminUserController@assignRoles", "Assign AdminUser Roles");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+        action = new AdminAction("AdminUserController@resetPassword", "Reset AdminUser Password");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+
+        group = new AdminActionGroup("AdminRoles");
+        adminActionGroupRepo.save(group);
+        action = new AdminAction("AdminRoleController@index", "List AdminRoles");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+        action = new AdminAction("AdminRoleController@create", "Create AdminRole");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+        action = new AdminAction("AdminRoleController@destroy", "Delete AdminRole");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+        action = new AdminAction("AdminRoleController@assignActions", "Assign AdminRole Actions");
+        action.setGroup(group);
+        adminActionRepo.save(action);
+
+        group = new AdminActionGroup("AdminActions");
+        adminActionGroupRepo.save(group);
+        action = new AdminAction("AdminActionController@index", "List AdminActions");
+        action.setGroup(group);
+        adminActionRepo.save(action);
     }
 }

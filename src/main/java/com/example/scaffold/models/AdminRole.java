@@ -41,7 +41,6 @@ public class AdminRole {
             joinColumns = @JoinColumn(name = "admin_role_id"),
             inverseJoinColumns = @JoinColumn(name = "admin_action_id")
     )
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     private Set<AdminAction> actions;
 
     public AdminRole(){}
@@ -88,5 +87,9 @@ public class AdminRole {
 
     public Date getUpdatedAt() {
         return updatedAt;
+    }
+
+    public boolean isAdmin() {
+        return getName().equals("admin");
     }
 }
