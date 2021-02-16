@@ -4,7 +4,7 @@ RESTful API backend service scaffold with basic features
 
 Based on [Spring Boot 2.4](https://spring.io/projects/spring-boot#learn)
 
-Frontend admin dashboard: [vue-admin](https://github.com/dodowhat/vue-admin)
+Frontend admin dashboard: [vue-admin-scaffold](https://github.com/dodowhat/vue-admin-scaffold)
 
 ## Features
 
