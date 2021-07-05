@@ -9,10 +9,12 @@ import me.dodowhat.example.config.security.JwtGenerator;
 import me.dodowhat.example.config.security.JwtValidator;
 import me.dodowhat.example.dto.admin.auth.LoginRequestDTO;
 import me.dodowhat.example.dto.admin.auth.RefreshRequestDTO;
+import me.dodowhat.example.dto.admin.auth.ShowResponseDTO;
 import me.dodowhat.example.model.Administrator;
 import me.dodowhat.example.repository.AdministratorRepository;
 import me.dodowhat.example.dto.admin.auth.UpdatePasswordRequestDTO;
 import me.dodowhat.example.config.security.AdministratorUserDetails;
+import org.casbin.jcasbin.main.Enforcer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,17 +38,20 @@ public class AuthController {
     private final AdministratorRepository administratorRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtGenerator jwtGenerator;
+    private final Enforcer enforcer;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             AdministratorRepository administratorRepository,
             PasswordEncoder passwordEncoder,
-            JwtGenerator jwtGenerator
+            JwtGenerator jwtGenerator,
+            Enforcer enforcer
     ) {
         this.authenticationManager = authenticationManager;
         this.administratorRepository = administratorRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtGenerator = jwtGenerator;
+        this.enforcer = enforcer;
     }
 
     @ApiOperation(value="login", notes = "Return tokens and user info")
@@ -117,11 +122,15 @@ public class AuthController {
 
     @ApiOperation("fetch authenticated user info")
     @GetMapping("")
-    public ResponseEntity<Administrator> show(@ApiIgnore Authentication authentication) {
+    public ResponseEntity<ShowResponseDTO> show(@ApiIgnore Authentication authentication) {
         Administrator administrator = administratorRepository.findByUsername(authentication.getName())
                 .orElseThrow(EntityNotFoundException::new);
+        ShowResponseDTO responseDTO = new ShowResponseDTO();
+        responseDTO.setId(administrator.getId());
+        responseDTO.setUsername(administrator.getUsername());
+        responseDTO.setRoles(enforcer.getRolesForUser(administrator.getUsername()));
         return ResponseEntity.ok()
-                .body(administrator);
+                .body(responseDTO);
     }
 
     @ApiOperation("update authenticated user's password")

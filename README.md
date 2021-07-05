@@ -6,7 +6,7 @@ SpringBoot RESTful API service example
 
 - Spring Security
 
-- Authentication: [Nimbus JOSE + JWT](https://connect2id.com/products/nimbus-jose-jwt)
+- Authentication: [Nimbus JOSE JWT](https://connect2id.com/products/nimbus-jose-jwt)
 
 - Authorization: [Casbin](https://casbin.org)
 
