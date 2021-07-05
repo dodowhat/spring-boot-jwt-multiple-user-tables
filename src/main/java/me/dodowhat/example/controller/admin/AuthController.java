@@ -56,7 +56,7 @@ public class AuthController {
 
     @ApiOperation(value="login", notes = "Return tokens and user info")
     @PostMapping("")
-    public ResponseEntity<Administrator> login(@RequestBody LoginRequestDTO requestDTO) {
+    public ResponseEntity<ShowResponseDTO> login(@RequestBody LoginRequestDTO requestDTO) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         requestDTO.getUsername(),
@@ -73,10 +73,15 @@ public class AuthController {
         String accessToken = jwtGenerator.generate(sub, ADMIN_AUDIENCE, ACCESS_TOKEN_TYPE);
         String refreshToken = jwtGenerator.generate(sub, ADMIN_AUDIENCE, REFRESH_TOKEN_TYPE);
 
+        ShowResponseDTO responseDTO = new ShowResponseDTO();
+        responseDTO.setId(administrator.getId());
+        responseDTO.setUsername(administrator.getUsername());
+        responseDTO.setRoles(enforcer.getRolesForUser(administrator.getUsername()));
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, accessToken)
                 .header(REFRESH_TOKEN_HEADER, refreshToken)
-                .body(administrator);
+                .body(responseDTO);
     }
 
     @ApiOperation(value = "refresh tokens", notes = "return in http header")
