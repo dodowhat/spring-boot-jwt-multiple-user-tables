@@ -10,7 +10,7 @@ SpringBoot RESTful API service example
 
 - Authorization: [Casbin](https://casbin.org)
 
-- Swagger V3
+- Swagger V3: [Springfox](http://springfox.github.io/springfox/docs/current/)
 
 ## Frontend
 
