@@ -19,6 +19,6 @@ public class RbacSeeder {
     @EventListener
     public void run(ContextRefreshedEvent event) {
         enforcer.addRoleForUser(IMPLICIT_USER, SUPER_ROLE);
-        enforcer.addRoleForUser(IMPLICIT_USER, "editor");
+        enforcer.addRoleForUser(IMPLICIT_USER, "demo");
     }
 }

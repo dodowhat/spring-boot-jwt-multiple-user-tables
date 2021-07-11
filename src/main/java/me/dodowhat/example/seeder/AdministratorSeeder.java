@@ -36,7 +36,7 @@ public class AdministratorSeeder {
             enforcer.addRoleForUser(username, SUPER_ROLE);
         }
 
-        username = "editor";
+        username = "demo";
         if (!administratorRepository.existsByUsername(username)) {
             createAdministrator(username);
         }

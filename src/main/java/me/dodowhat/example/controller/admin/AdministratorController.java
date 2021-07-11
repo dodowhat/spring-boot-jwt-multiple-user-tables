@@ -2,7 +2,7 @@ package me.dodowhat.example.controller.admin;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import me.dodowhat.example.config.exception.ActionNotAllowedException;
+import me.dodowhat.example.config.exception.ForbiddenException;
 import me.dodowhat.example.config.exception.NotFoundException;
 import me.dodowhat.example.dto.admin.administrator.CreateRequestDTO;
 import me.dodowhat.example.dto.admin.administrator.ResetPasswordResponseDTO;
@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import me.dodowhat.example.model.Administrator;
@@ -37,8 +38,9 @@ public class AdministratorController {
 		this.passwordEncoder = passwordEncoder;
 	}
 
+	@ApiOperation("create administrator")
 	@PostMapping("")
-	public ResponseEntity<Administrator> create(@RequestBody CreateRequestDTO requestDTO) {
+	public ResponseEntity<Administrator> create(@Validated @RequestBody CreateRequestDTO requestDTO) {
 		Administrator administrator = new Administrator();
 		administrator.setUsername(requestDTO.getUsername());
 		administrator.setPassword(passwordEncoder.encode(requestDTO.getPassword()));
@@ -46,6 +48,7 @@ public class AdministratorController {
 		return ResponseEntity.ok(administrator);
 	}
 
+	@ApiOperation("administrator list")
 	@GetMapping("")
 	public ResponseEntity<Page<Administrator>> index(@RequestParam(required = false, defaultValue = "1") int page) {
 		Pageable pageable = PageRequest.of(page - 1, 10);
@@ -53,20 +56,14 @@ public class AdministratorController {
 		return ResponseEntity.ok().body(p);
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<Administrator> show(@PathVariable long id) throws NotFoundException {
-		Administrator administrator = administratorRepository.findById(id)
-				.orElseThrow(NotFoundException::new);
-		return ResponseEntity.ok(administrator);
-	}
-
+	@ApiOperation("delete administrator")
 	@DeleteMapping("/{id}")
 	public void destroy(@ApiIgnore Authentication authentication, @PathVariable long id)
-			throws NotFoundException, ActionNotAllowedException {
+			throws NotFoundException, ForbiddenException {
 		Administrator authenticated = administratorRepository.findByUsername(authentication.getName())
 				.orElseThrow(NotFoundException::new);
 		if (authenticated.getId() == id) {
-			throw new ActionNotAllowedException("Not allowed to delete yourself");
+			throw new ForbiddenException("Forbidden: deleting yourself");
 		}
 		Administrator administrator = administratorRepository.findById(id)
 				.orElseThrow(NotFoundException::new);
@@ -74,18 +71,18 @@ public class AdministratorController {
 		administratorRepository.delete(administrator);
 	}
 
-	@ApiOperation("reset password")
+	@ApiOperation("reset administrator's password")
 	@PatchMapping("/{id}/password/reset")
 	public ResponseEntity<ResetPasswordResponseDTO> resetPassword(
 			Authentication authentication,
 			@PathVariable long id
-	) throws NotFoundException, ActionNotAllowedException {
+	) throws NotFoundException, ForbiddenException {
 		Administrator authenticated = administratorRepository.findByUsername(authentication.getName())
 				.orElseThrow(NotFoundException::new);
 		Administrator administrator = administratorRepository.findById(id)
 				.orElseThrow(NotFoundException::new);
 		if (authenticated.getId() == id) {
-			throw new ActionNotAllowedException("Not allowed to reset password for yourself");
+			throw new ForbiddenException("Forbidden: altering yourself");
 		}
 		SecureRandom secureRandom = new SecureRandom();
 		byte[] bytes = new byte[8];

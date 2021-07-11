@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import me.dodowhat.example.config.exception.BadRequestException;
+import me.dodowhat.example.config.exception.ForbiddenException;
 import me.dodowhat.example.config.exception.NotFoundException;
 import me.dodowhat.example.config.exception.UnprocessableEntityException;
 import me.dodowhat.example.dto.admin.rbac.RoleDTO;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import springfox.documentation.annotations.ApiIgnore;
@@ -37,7 +39,6 @@ public class RbacController {
 
     @Value("${server.port}")
     private int port;
-    private final RestTemplate restTemplate;
     private final Enforcer enforcer;
     private final AdministratorRepository administratorRepository;
     private final RbacService rbacService;
@@ -48,12 +49,13 @@ public class RbacController {
             AdministratorRepository administratorRepository,
             RbacService rbacService
     ) {
-        this.restTemplate = restTemplateBuilder.build();
+        RestTemplate restTemplate = restTemplateBuilder.build();
         this.enforcer = enforcer;
         this.administratorRepository = administratorRepository;
         this.rbacService = rbacService;
     }
 
+    @ApiOperation("permission list")
     @GetMapping("/permissions")
     public ResponseEntity<String> permissions() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
@@ -67,13 +69,13 @@ public class RbacController {
             throws JsonProcessingException,
             NotFoundException,
             BadRequestException,
-            UnprocessableEntityException
+            ForbiddenException
     {
         if (name.equals(SUPER_ROLE)) {
-            throw new UnprocessableEntityException();
+            throw new ForbiddenException("Forbidden: altering root role");
         }
         if (!enforcer.hasRoleForUser(IMPLICIT_USER, name)) {
-            throw new NotFoundException("role not exists: " + name);
+            throw new NotFoundException("Role doesn't exist: " + name);
         }
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(rbacService.getPermissions());
@@ -97,6 +99,13 @@ public class RbacController {
         }
     }
 
+    @ApiOperation("permission list for role")
+    @GetMapping("/roles/{name}/permissions")
+    public ResponseEntity<List<List<String>>> permissionsForRole(@PathVariable String name) {
+        return ResponseEntity.ok(enforcer.getPermissionsForUser(name));
+    }
+
+    @ApiOperation("role list")
     @GetMapping("/roles")
     public ResponseEntity<HashSet<String>> roles() {
         return ResponseEntity.ok().body(new HashSet<>(enforcer.getAllRoles()));
@@ -104,27 +113,21 @@ public class RbacController {
 
     @ApiOperation("create role")
     @PostMapping("/roles")
-    public ResponseEntity<RoleDTO> createRole(@RequestBody RoleDTO roleDTO)
+    public ResponseEntity<RoleDTO> createRole(@Validated @RequestBody RoleDTO roleDTO)
             throws UnprocessableEntityException {
         if (!enforcer.addRoleForUser(IMPLICIT_USER, roleDTO.getName())) {
-            throw new UnprocessableEntityException();
+            throw new UnprocessableEntityException("Role already exists: " + roleDTO.getName());
         }
         return ResponseEntity.ok().body(roleDTO);
     }
 
     @ApiOperation("delete role")
     @DeleteMapping("/roles/{name}")
-    public void destroyRole(@PathVariable String name) throws UnprocessableEntityException {
+    public void destroyRole(@PathVariable String name) throws ForbiddenException {
         if (name.equals(SUPER_ROLE)) {
-            throw new UnprocessableEntityException();
+            throw new ForbiddenException("Forbidden: deleting root role");
         }
         enforcer.deleteRole(name);
-    }
-
-    @ApiOperation("roles for administrators")
-    @GetMapping("/administrators/{username}/roles")
-    public ResponseEntity<List<String>> rolesForAdministrator(@PathVariable String username) {
-        return ResponseEntity.ok().body(enforcer.getRolesForUser(username));
     }
 
     @ApiOperation("assigning roles for administrator")
@@ -133,11 +136,11 @@ public class RbacController {
             @ApiIgnore Authentication authentication,
             @PathVariable String username,
             @RequestBody List<String> roles
-    ) throws NotFoundException, UnprocessableEntityException {
+    ) throws NotFoundException, ForbiddenException, UnprocessableEntityException {
         Administrator administrator = administratorRepository.findByUsername(username)
                 .orElseThrow(NotFoundException::new);
         if (administrator.getUsername().equals(authentication.getName())) {
-            throw new UnprocessableEntityException("cannot alter current administrator");
+            throw new ForbiddenException("Forbidden: altering yourself");
         }
         if (roles.size() == 0) {
             enforcer.deleteRolesForUser(administrator.getUsername());

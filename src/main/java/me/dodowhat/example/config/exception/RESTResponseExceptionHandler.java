@@ -18,7 +18,7 @@ public class RESTResponseExceptionHandler {
         return responseDTO;
     }
 
-    @ExceptionHandler(ActionNotAllowedException.class)
+    @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ExceptionResponseDTO> actionNotAllowed(Exception e, HttpServletRequest request) {
         ExceptionResponseDTO responseBody = createResponseDTO(e.getMessage(), request.getRequestURI());
         return new ResponseEntity<>(responseBody, HttpStatus.FORBIDDEN);
@@ -42,11 +42,4 @@ public class RESTResponseExceptionHandler {
         return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
     }
 
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<ExceptionResponseDTO> methodArgumentNotValid(MethodArgumentNotValidException e, HttpServletRequest request) {
-//        FieldError fieldError = (FieldError) e.getAllErrors().get(0);
-//        String message = fieldError.getField() + " " + fieldError.getDefaultMessage();
-//        ExceptionResponseDTO responseBody = createResponseDTO(message, request.getRequestURI());
-//        return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-//    }
 }

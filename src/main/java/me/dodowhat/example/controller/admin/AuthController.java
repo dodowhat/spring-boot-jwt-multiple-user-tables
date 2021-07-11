@@ -3,7 +3,6 @@ package me.dodowhat.example.controller.admin;
 import com.nimbusds.jwt.JWTClaimsSet;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import me.dodowhat.example.config.exception.ActionNotAllowedException;
 import me.dodowhat.example.config.exception.UnprocessableEntityException;
 import me.dodowhat.example.config.security.JwtGenerator;
 import me.dodowhat.example.config.security.JwtValidator;
@@ -22,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -125,7 +125,7 @@ public class AuthController {
                 .body(null);
     }
 
-    @ApiOperation("fetch authenticated user info")
+    @ApiOperation("fetch authenticated administrator info")
     @GetMapping("")
     public ResponseEntity<ShowResponseDTO> show(@ApiIgnore Authentication authentication) {
         Administrator administrator = administratorRepository.findByUsername(authentication.getName())
@@ -138,12 +138,12 @@ public class AuthController {
                 .body(responseDTO);
     }
 
-    @ApiOperation("update authenticated user's password")
+    @ApiOperation("update authenticated administrator's password")
     @PatchMapping("/password")
     public void updatePassword(
             @ApiIgnore Authentication authentication,
-            @RequestBody UpdatePasswordRequestDTO requestDTO
-    ) throws ActionNotAllowedException, UnprocessableEntityException {
+            @Validated @RequestBody UpdatePasswordRequestDTO requestDTO
+    ) throws UnprocessableEntityException {
 
         try {
             authenticationManager.authenticate(
