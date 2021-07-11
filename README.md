@@ -10,6 +10,8 @@ SpringBoot RESTful API service example
 
 - Authorization: [Casbin](https://casbin.org)
 
+- Swagger V3
+
 ## Frontend
 
 Admin Dashboard: [vue-admin-example](https://github.com/dodowhat/vue-admin-example)
