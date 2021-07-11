@@ -7,6 +7,7 @@ import me.dodowhat.example.config.exception.NotFoundException;
 import me.dodowhat.example.dto.admin.administrator.CreateRequestDTO;
 import me.dodowhat.example.dto.admin.administrator.ResetPasswordResponseDTO;
 import me.dodowhat.example.repository.AdministratorRepository;
+import org.casbin.jcasbin.main.Enforcer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,9 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.HashSet;
+
+import static me.dodowhat.example.config.security.RbacConstants.SUPER_ROLE;
 
 @Api(tags = "Admin Administrators")
 @RestController
@@ -29,13 +33,16 @@ public class AdministratorController {
 
 	private final AdministratorRepository administratorRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final Enforcer enforcer;
 
 	public AdministratorController(
 			AdministratorRepository administratorRepository,
-			PasswordEncoder passwordEncoder
+			PasswordEncoder passwordEncoder,
+			Enforcer enforcer
 	) {
 		this.administratorRepository = administratorRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.enforcer = enforcer;
 	}
 
 	@ApiOperation("create administrator")
@@ -67,7 +74,11 @@ public class AdministratorController {
 		}
 		Administrator administrator = administratorRepository.findById(id)
 				.orElseThrow(NotFoundException::new);
-		administratorRepository.save(administrator);
+		HashSet<String> superusers = new HashSet<>(enforcer.getUsersForRole(SUPER_ROLE));
+		if (superusers.contains(administrator.getUsername()) && superusers.size() <= 2) {
+			throw new ForbiddenException("Forbidden: deleting last superuser");
+		}
+		enforcer.deleteUser(administrator.getUsername());
 		administratorRepository.delete(administrator);
 	}
 
